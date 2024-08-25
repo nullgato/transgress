@@ -1,5 +1,29 @@
 {
-    "name": "transgress",
+    "name": "@nullgato/transgress",
+    "description": "Overcomplicated, very opinionated, maximalist web framework",
+    "version": "0.1.0",
+    "author": "nullgato (Ember) <nullgato@bratcats.gay>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/nullgato/transgress.git"
+    },
+    "homepage": "https://github.com/nullgato/transgress",
+    "keywords": [
+        "bun",
+        "framework",
+        "web",
+        "http",
+        "rest",
+        "websocket",
+        "websockets",
+        "rest",
+        "restful",
+        "router",
+        "middleware",
+        "app",
+        "api"
+    ],
     "module": "index.ts",
     "type": "module",
     "devDependencies": {
