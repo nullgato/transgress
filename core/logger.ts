@@ -1,69 +1,74 @@
 import chalk from 'chalk'
-import type { ILogger, ILogObject } from '../interfaces'
+import type { ILogger, ILoggerOptions, ILogObject } from '../interfaces'
 import { OLogLevel, type LogLevel } from '../types'
 
 class Logger implements ILogger {
-    private _minLogLevel: LogLevel
+    private _loggerOptions: ILoggerOptions
 
-    constructor(defaultLogLevel: LogLevel = OLogLevel.Info) {
-        this._minLogLevel = defaultLogLevel
+    constructor(loggerOptions: ILoggerOptions) {
+        this._loggerOptions = loggerOptions
     }
 
     log(logObject: ILogObject, logLevel: LogLevel): ILogger {
         const prefixText = this.getLogPrefix(logLevel)
         const debugObjJson = logObject.debugObject ? JSON.stringify(logObject.debugObject, null, 4) : undefined
+        let message = ''
 
-        console.log(
-            `${prefixText} ${logLevel === OLogLevel.Fatal ? chalk.bgRed(logObject.message) : logObject.message}${
-                !debugObjJson ? '' : '\n' + debugObjJson + '\n'
-            }`
-        )
+        if (logLevel === OLogLevel.Fatal) message += chalk.bgRed(logObject.message)
+        else {
+            message += `${logObject.message}${!debugObjJson ? '' : '\n' + debugObjJson + '\n'}`
+        }
+
+        console.log(`${prefixText} ${message}${this._loggerOptions.extraSpacing ? '\n' : ''}`)
 
         return this
     }
 
     logTrace(data: string | ILogObject): ILogger {
-        return this.minLogLevel > OLogLevel.Trace
+        return this._loggerOptions.logLevel > OLogLevel.Trace
             ? this
             : this.log(typeof data === 'string' ? { message: data } : (data as ILogObject), OLogLevel.Trace)
     }
 
     logDebug(data: string | ILogObject): ILogger {
-        return this.minLogLevel > OLogLevel.Debug
+        return this._loggerOptions.logLevel > OLogLevel.Debug
             ? this
             : this.log(typeof data === 'string' ? { message: data } : (data as ILogObject), OLogLevel.Debug)
     }
 
     logInfo(data: string | ILogObject): ILogger {
-        return this.minLogLevel > OLogLevel.Info
+        return this._loggerOptions.logLevel > OLogLevel.Info
             ? this
             : this.log(typeof data === 'string' ? { message: data } : (data as ILogObject), OLogLevel.Info)
     }
 
     logWarn(data: string | ILogObject): ILogger {
-        return this.minLogLevel > OLogLevel.Warn
+        return this._loggerOptions.logLevel > OLogLevel.Warn
             ? this
             : this.log(typeof data === 'string' ? { message: data } : (data as ILogObject), OLogLevel.Warn)
     }
 
     logError(data: string | ILogObject): ILogger {
-        return this.minLogLevel > OLogLevel.Error
+        return this._loggerOptions.logLevel > OLogLevel.Error
             ? this
             : this.log(typeof data === 'string' ? { message: data } : (data as ILogObject), OLogLevel.Error)
     }
 
     logFatal(data: string | ILogObject): ILogger {
-        return this.minLogLevel > OLogLevel.Fatal
+        return this._loggerOptions.logLevel > OLogLevel.Fatal
             ? this
             : this.log(typeof data === 'string' ? { message: data } : (data as ILogObject), OLogLevel.Fatal)
     }
 
     private getTimeText(): string {
         const now = new Date()
-        const hoursText = `${now.getUTCHours() < 10 ? '0' + now.getUTCHours() : now.getUTCHours()}`
-        const minutesText = `${now.getUTCMinutes() < 10 ? '0' + now.getUTCMinutes() : now.getUTCMinutes()}`
-        const secondsText = `${now.getUTCSeconds() < 10 ? '0' + now.getUTCSeconds() : now.getUTCSeconds()}`
-        return `${hoursText}:${minutesText}:${secondsText}Z`
+        const opts: Intl.DateTimeFormatOptions = {
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            timeZone: this.loggerOptions.intlOptions.timezone,
+        }
+        return Intl.DateTimeFormat(this.loggerOptions.intlOptions.locale, opts).format(now)
     }
 
     private getLogPrefix(logLevel: LogLevel): string {
@@ -83,15 +88,8 @@ class Logger implements ILogger {
         }
     }
 
-    get minLogLevel(): LogLevel {
-        const logLevel = Bun.env.LOG_LEVEL
-        if (!logLevel) return this._minLogLevel
-
-        try {
-            return parseInt(logLevel) as LogLevel
-        } catch {
-            return this._minLogLevel
-        }
+    get loggerOptions(): ILoggerOptions {
+        return this._loggerOptions
     }
 }
 

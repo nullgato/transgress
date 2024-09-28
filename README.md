@@ -7,21 +7,25 @@
 ## Usage
 
 ```typescript
-import { Logger, Middleware } from '@nullgato/transgress/core'
-import { transgress } from '@nullgato/transgress'
-import type { ILogger, ILogObject, ITransgressOptions } from '@nullgato/transgress/interfaces'
-import { OLogLevel, type RouterResponse } from '@nullgato/transgress/types'
-
 // you can write your own ILogger, but one is provided for you
-const logger = new Logger(OLogLevel.Info)
+const loggerOpts = {
+    logLevel: OLogLevel.Info,
+    intlOptions: {
+        locale: 'en-US',
+        timezone: 'America/Chicago',
+    },
+    extraSpacing: false,
+}
+
+const logger = new Logger(loggerOpts)
 
 // same with the IMiddleware interface
 const middleware = new Middleware(logger)
 
 middleware.register({
-    name: 'middleware',
+    name: 'Middleware Name',
     callback: async (logger: ILogger, req: Request): RouterResponse => {
-        return new Response('hewwo', { status: 200 })
+        return new Response('hewwo', { status: 400 })
     },
     log: (logger: ILogger, data: string | ILogObject): ILogger => {
         return logger
@@ -32,13 +36,14 @@ const options: ITransgressOptions = {
     development: true,
     // the errorHandler is optional
     errorHandler: (error: Error) => {
-        return new Response('rip', { status: 200 })
+        return new Response('rip', { status: 500 })
     },
     middleware,
     port: 12000,
 }
 
 const server = transgress(options)
+logger.logInfo(`Server initialized and running on port: ${server.port}`)
 
 // Server is now listening for connections
 ```

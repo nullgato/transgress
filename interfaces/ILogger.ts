@@ -1,8 +1,8 @@
 import type { LogLevel } from '../types'
-import type { ILogObject } from './'
+import type { ILoggerOptions, ILogObject } from './'
 
 interface ILogger {
-    minLogLevel: LogLevel
+    loggerOptions: ILoggerOptions
     log: (logObject: ILogObject, logLevel: LogLevel) => ILogger
     logTrace: (data: string | ILogObject) => ILogger
     logDebug: (data: string | ILogObject) => ILogger
